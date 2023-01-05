@@ -1,32 +1,32 @@
-# Prerequisites
-*.d
+**.cso
+**.obj
+Local/
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+Bin/*.exe
+Bin/*.pdb
+Bin/*.ilk
+Bin/Settings
+Bin/*.dll
+Bin/*_Debug*
+Bin/*_Release*
+Bin/*_Retail*
 
-# Precompiled Headers
-*.gch
-*.pch
+Bin/settings/
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+Makefile
 
-# Fortran module files
-*.mod
-*.smod
+Temp/
+*.sln
+.vs
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+Lib/*Engine_Debug.*
+Lib/*Engine_Release.*
+Lib/*Engine_Retail.*
 
-# Executables
-*.exe
-*.out
-*.app
+Lib/*External_Debug.*
+Lib/*External_Release.*
+Lib/*External_Retail.*
+
+Lib/*Game_Debug.*
+Lib/*Game_Release.*
+Lib/*Game_Retail.*
