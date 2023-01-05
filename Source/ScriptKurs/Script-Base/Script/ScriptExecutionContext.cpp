@@ -59,7 +59,7 @@ ScriptExecutionContext::~ScriptExecutionContext()
 void ScriptExecutionContext::TriggerOutputPin(ScriptPinId pinId)
 {
 	assert(myTriggeredOutputCount < MAX_TRIGGERED_OUTPUTS);
-	
+
 	if (myTriggeredOutputCount < MAX_TRIGGERED_OUTPUTS)
 	{
 		myTriggeredOutputQueue[myTriggeredOutputCount] = pinId;
@@ -74,7 +74,7 @@ ScriptLinkData ScriptExecutionContext::ReadInputPin(ScriptPinId pinId)
 	size_t count;
 	const ScriptLinkId* linkIds = script.GetConnectedLinks(pinId, count);
 
-	assert("Trying to read from a flow pin" && script.GetPin(pinId).dataType != ScriptLinkDataType::Flow);
+	assert("Trying to read from a flow pin" && (script.GetPin(pinId).dataType != ScriptLinkDataType::Flow));
 	assert("Trying to read from a pin with unknown type" && script.GetPin(pinId).dataType != ScriptLinkDataType::Unknown);
 	assert("Only one link allowed on value input pins" && count <= 1);
 
