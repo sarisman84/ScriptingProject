@@ -7,7 +7,6 @@ class PressurePlate : public Entity
 {
 public:
 	PressurePlate();
-	const bool IsBeingPressed(Player* const aPlayer);
 	InteractionResult Interact(const GameUpdateContext& context, Entity& interactingEntity) override;
 };
 

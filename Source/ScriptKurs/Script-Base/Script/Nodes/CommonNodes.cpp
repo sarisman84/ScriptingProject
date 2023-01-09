@@ -5,6 +5,7 @@
 #include <Script/ScriptCommon.h>
 #include <Script/ScriptNodeBase.h>
 
+#include <iostream>
 
 using namespace Tga;
 

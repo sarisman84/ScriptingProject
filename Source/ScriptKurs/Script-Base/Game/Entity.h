@@ -23,5 +23,5 @@ public:
 	bool canStandOn;
 
 	virtual void Update(const GameUpdateContext& context) { context; }
-	virtual InteractionResult Interact(const GameUpdateContext& context, Entity& interactingEntity) { context; interactingEntity;  return InteractionResult::NoInteraction; }
+	virtual InteractionResult Interact(const GameUpdateContext& context, Entity& interactingEntity) { context; interactingEntity;  return canStandOn ? InteractionResult::MoveOntoTile : InteractionResult::NoInteraction; }
 };

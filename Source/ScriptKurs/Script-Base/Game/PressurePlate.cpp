@@ -6,14 +6,10 @@
 
 
 
-const bool PressurePlate::IsBeingPressed(Player* const /*aPlayer*/)
-{
-    return false;
-}
 
 PressurePlate::PressurePlate()
 {
-    
+    sprite = SpriteId::PlateUp;
 }
 
 Entity::InteractionResult PressurePlate::Interact(const GameUpdateContext& /*context*/, Entity& /*interactingEntity*/)
