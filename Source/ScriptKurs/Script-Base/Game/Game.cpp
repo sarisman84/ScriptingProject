@@ -274,7 +274,7 @@ void Game::Render()
 void Game::LoadLevel(const char* name, bool runScripts)
 {
 	std::string path = Tga::Settings::ResolveAssetPath("levels/" + std::string(name) + ".txt");
-
+	std::unique_ptr< Tga::ScriptRuntimeInstance> oldScript = std::move(myCurrentLevel.levelScript);
 	myCurrentLevel = {};
 	{
 		std::ifstream file(path);
@@ -346,5 +346,9 @@ void Game::LoadLevel(const char* name, bool runScripts)
 			myCurrentLevel.levelScript = std::make_unique<Tga::ScriptRuntimeInstance>(script);
 			myCurrentLevel.levelScript->Init();
 		}
+	}
+	else if (oldScript)
+	{
+		myCurrentLevel.levelScript = std::move(oldScript);
 	}
 }

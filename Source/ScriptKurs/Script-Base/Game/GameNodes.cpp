@@ -520,6 +520,7 @@ public:
 
 
 		auto entity = updateContext.gameLevel.entities.GetEntity(id);
+		if (!entity) return Tga::ScriptNodeResult::Finished;
 		entity->sprite = (SpriteId)spriteIndex;
 
 		someContext.TriggerOutputPin(myFlowOutputPin);
@@ -624,8 +625,9 @@ public:
 		{
 			
 			bool result = false;
-			updateContext.gameLevel.entities.ForEachEntity([&](Entity& anEntity)
+			updateContext.gameLevel.entities.ForEachEntity([sourceEntity, &result](Entity& anEntity)
 				{
+					if (!sourceEntity) return;
 					auto targetEntity = anEntity;
 					if (sourceEntity->position == targetEntity.position && sourceEntity->id != targetEntity.id)
 					{

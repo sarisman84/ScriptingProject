@@ -104,7 +104,7 @@ public:
 		context.TriggerOutputPin(myFlowOutputPin);
 		const GameUpdateContext& updateContext = static_cast<const GameUpdateContext&>(context.GetUpdateContext());
 		auto levelName = std::get<Tga::ScriptStringId>(context.ReadInputPin(myLevelNamePin).data);
-		updateContext.game.LoadLevel(Tga::ScriptStringRegistry::GetStringFromStringId(levelName).data(), true);
+		updateContext.game.LoadLevel(Tga::ScriptStringRegistry::GetStringFromStringId(levelName).data(), false);
 		return ScriptNodeResult::Finished;
 	}
 private:
