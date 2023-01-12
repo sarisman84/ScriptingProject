@@ -8,6 +8,7 @@ namespace Tga
 }
 
 struct GameLevel;
+class Game;
 
 /// <summary>
 /// By inheriting from ScriptUpdateContext, GameUpdateContext can be used to provide additional data to nodes in this game
@@ -15,6 +16,8 @@ struct GameLevel;
 /// </summary>
 struct GameUpdateContext : Tga::ScriptUpdateContext
 {
+	Game& game;
 	GameLevel& gameLevel;
 	const Tga::InputManager& inputManager;
+
 };

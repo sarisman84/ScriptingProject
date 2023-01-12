@@ -29,7 +29,7 @@ Game::~Game()
 {}
 
 void Game::Init()
-{	
+{
 	auto& engine = *Tga::Engine::GetInstance();
 	Tga::TextureManager& textureManager = engine.GetTextureManager();
 
@@ -65,7 +65,7 @@ void Game::Update(const Tga::InputManager& inputManager, float aTimeDelta)
 	if (inputManager.IsKeyPressed('R'))
 		LoadLevel("world01", true);
 
-	GameUpdateContext context{ aTimeDelta, myCurrentLevel, inputManager };
+	GameUpdateContext context{ aTimeDelta,*this, myCurrentLevel, inputManager };
 
 	if (myCurrentLevel.levelScript)
 	{

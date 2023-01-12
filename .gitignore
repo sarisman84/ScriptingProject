@@ -12,7 +12,8 @@ Bin/*_Release*
 Bin/*_Retail*
 
 Bin/settings/
-
+Builds/
+builds/
 Makefile
 
 Temp/
