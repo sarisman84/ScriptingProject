@@ -62,8 +62,7 @@ void Game::Init()
 
 void Game::Update(const Tga::InputManager& inputManager, float aTimeDelta)
 {
-	if (inputManager.IsKeyPressed('R'))
-		LoadLevel("world01", true);
+
 
 	GameUpdateContext context{ aTimeDelta,*this, myCurrentLevel, inputManager };
 
@@ -76,6 +75,12 @@ void Game::Update(const Tga::InputManager& inputManager, float aTimeDelta)
 		{
 			entity.Update(context);
 		});
+
+	if (inputManager.IsKeyPressed('R'))
+	{
+		LoadLevel("world01", true, false, true);
+	}
+
 }
 
 void Game::Render()
@@ -271,11 +276,21 @@ void Game::Render()
 	}
 }
 
-void Game::LoadLevel(const char* name, bool runScripts)
+void Game::LoadLevel(const char* name, bool runScripts, bool runSameScript, bool resetPreviousLevel)
 {
+	if (!resetPreviousLevel)
+		myPreviousLevel = myCurrentLevel.levelNameID;
 	std::string path = Tga::Settings::ResolveAssetPath("levels/" + std::string(name) + ".txt");
-	std::unique_ptr< Tga::ScriptRuntimeInstance> oldScript = std::move(myCurrentLevel.levelScript);
+	static std::unique_ptr< Tga::ScriptRuntimeInstance> oldScript;
+	oldScript = std::move(myCurrentLevel.levelScript);
+	//myCurrentLevel.entities.ForEachEntity([this](Entity& anEntity)
+	//	{
+	//		myCurrentLevel.entities.DestroyEntity(anEntity.id);
+	//	});
 	myCurrentLevel = {};
+	myCurrentLevel.levelNameID = Tga::ScriptStringRegistry::RegisterOrGetString(name);
+	if (resetPreviousLevel)
+		myPreviousLevel = myCurrentLevel.levelNameID;
 	{
 		std::ifstream file(path);
 		std::string line;
@@ -340,15 +355,27 @@ void Game::LoadLevel(const char* name, bool runScripts)
 
 	if (runScripts)
 	{
-		std::shared_ptr<const Tga::Script> script = Tga::ScriptManager::GetScript(name);
-		if (script)
+		if (runSameScript && oldScript)
 		{
-			myCurrentLevel.levelScript = std::make_unique<Tga::ScriptRuntimeInstance>(script);
-			myCurrentLevel.levelScript->Init();
+			myCurrentLevel.levelScript = std::move(oldScript);
 		}
+		else
+		{
+
+			std::shared_ptr<const Tga::Script> script = Tga::ScriptManager::GetScript(name);
+			if (script)
+			{
+				//if (oldScript)
+				//	oldScript.reset(nullptr);
+				//myCurrentLevel.levelScript.reset(nullptr);
+				myCurrentLevel.levelScript = std::make_unique<Tga::ScriptRuntimeInstance>(script);
+				myCurrentLevel.levelScript->Init();
+			}
+		}
+
+		//if (!runSameScript && oldScript)
+		//	oldScript.reset(nullptr);
+
 	}
-	else if (oldScript)
-	{
-		myCurrentLevel.levelScript = std::move(oldScript);
-	}
+
 }

@@ -6,8 +6,11 @@
 #include <tge/math/Vector.h>
 #include <memory>
 
+#include <Script/ScriptCommon.h>
 struct GameLevel
 {
+
+	Tga::ScriptStringId levelNameID;
 	LevelTileType tiles[LEVEL_WIDTH][LEVEL_HEIGHT];
 	EntityContainer entities;
 	std::unique_ptr<Tga::ScriptRuntimeInstance> levelScript;

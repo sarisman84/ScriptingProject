@@ -70,9 +70,14 @@ void EntityContainer::ForEachEntityAtPosition(Tga::Vector2i position, F&& action
 template<typename F>
 void EntityContainer::ForEachEntity(F&& action)
 {
+
 	for (auto& pair : myEntities)
 	{
-		Entity& entity = *pair.second;
-		action(entity);
+		if (pair.second)
+		{
+			Entity& entity = *pair.second;
+			action(entity);
+		}
+		
 	}
 }
