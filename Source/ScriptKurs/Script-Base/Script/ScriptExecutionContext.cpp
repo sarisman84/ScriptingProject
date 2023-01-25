@@ -10,11 +10,12 @@ const ScriptUpdateContext& ScriptExecutionContext::GetUpdateContext()
 	return myUpdateContext;
 }
 
-ScriptExecutionContext::ScriptExecutionContext(ScriptRuntimeInstance& scriptRuntimeInstance, const ScriptUpdateContext& updateContext, ScriptNodeId nodeId, ScriptNodeRuntimeInstanceBase* nodeRuntimeInstance)
+ScriptExecutionContext::ScriptExecutionContext(ScriptRuntimeInstance& scriptRuntimeInstance, const ScriptUpdateContext& updateContext, ScriptNodeId nodeId, ScriptNodeId previousId, ScriptNodeRuntimeInstanceBase* nodeRuntimeInstance)
 	: myScriptRuntimeInstance(scriptRuntimeInstance)
 	, myUpdateContext(updateContext)
 	, myNodeId(nodeId)
 	, myNodeRuntimeInstance(nodeRuntimeInstance)
+	, myPreviousNodeId(previousId)
 {}
 
 ScriptExecutionContext::~ScriptExecutionContext()
@@ -40,18 +41,18 @@ ScriptExecutionContext::~ScriptExecutionContext()
 
 		ScriptNodeId nodeId = targetPin.node;
 
-		ScriptExecutionContext executionContext(myScriptRuntimeInstance, myUpdateContext, nodeId, myScriptRuntimeInstance.GetRuntimeInstance(nodeId));
+		ScriptExecutionContext executionContext(myScriptRuntimeInstance, myUpdateContext, nodeId, myNodeId, myScriptRuntimeInstance.GetRuntimeInstance(nodeId));
 
 		const ScriptNodeBase& node = script.GetNode(nodeId);
 
 		ScriptNodeResult result = node.Execute(executionContext, targetPinId);
 		if (result == ScriptNodeResult::KeepRunning)
 		{
-			myScriptRuntimeInstance.ActivateNode(nodeId);
+			myScriptRuntimeInstance.ActivateNode(nodeId, myNodeId);
 		}
 		else
 		{
-			myScriptRuntimeInstance.DeactivateNode(nodeId);
+			myScriptRuntimeInstance.DeactivateNode(nodeId, myNodeId);
 		}
 	}
 }
@@ -100,6 +101,11 @@ ScriptLinkData ScriptExecutionContext::ReadInputPin(ScriptPinId pinId)
 	const ScriptNodeBase& node = script.GetNode(nodeId);
 
 	return node.ReadPin(executionContext, sourcePinId);
+}
+
+const ScriptNodeBase& Tga::ScriptExecutionContext::GetPreviousNode() const
+{
+	return myScriptRuntimeInstance.GetScript().GetNode(myPreviousNodeId);
 }
 
 

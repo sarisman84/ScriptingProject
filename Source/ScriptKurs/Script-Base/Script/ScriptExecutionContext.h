@@ -16,13 +16,14 @@ class ScriptExecutionContext
 	ScriptRuntimeInstance& myScriptRuntimeInstance;
 	const ScriptUpdateContext& myUpdateContext;
 	ScriptNodeId myNodeId;
+	ScriptNodeId myPreviousNodeId;
 	ScriptNodeRuntimeInstanceBase* myNodeRuntimeInstance;
 
 	ScriptPinId myTriggeredOutputQueue[MAX_TRIGGERED_OUTPUTS];
 	int myTriggeredOutputCount;
 
 public:
-	ScriptExecutionContext(ScriptRuntimeInstance& scriptRuntimeInstance, const ScriptUpdateContext& updateContext, ScriptNodeId nodeId, ScriptNodeRuntimeInstanceBase* nodeRuntimeInstance);
+	ScriptExecutionContext(ScriptRuntimeInstance& scriptRuntimeInstance, const ScriptUpdateContext& updateContext, ScriptNodeId nodeId,ScriptNodeId previousId, ScriptNodeRuntimeInstanceBase* nodeRuntimeInstance);
 	~ScriptExecutionContext();
 	const ScriptUpdateContext& GetUpdateContext();
 	ScriptNodeRuntimeInstanceBase* GetRuntimeInstanceData();
@@ -39,6 +40,7 @@ public:
 	/// <param name="inputPin"></param>
 	/// <returns></returns>
 	ScriptLinkData ReadInputPin(ScriptPinId inputPin);
+	const ScriptNodeBase& GetPreviousNode() const ;
 };
 
 } // namespace Tga

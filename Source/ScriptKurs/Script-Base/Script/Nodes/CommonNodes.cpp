@@ -10,6 +10,10 @@
 
 #include <iostream>
 
+
+#define GAMEUPDATECONTEXT(context) static_cast<const GameUpdateContext&>(context.GetUpdateContext())
+#define GETDATA(Data, context) *static_cast<Data*>(context.GetRuntimeInstanceData())
+typedef Tga::ScriptNodeRuntimeInstanceBase NodeState;
 using namespace Tga;
 
 class StartNode : public ScriptNodeBase
@@ -468,7 +472,7 @@ public:
 				myFlowOutputPins[i] = context.FindOrCreatePin(outputPin);
 			}
 		}
-	
+
 
 
 
@@ -488,6 +492,193 @@ private:
 	Tga::ScriptPinId myFlowOutputPins[Amount];
 
 };
+
+
+class DelayNode : public ScriptNodeBase
+{
+private:
+	struct Data : public NodeState
+	{
+		float myCurrentTime = 0;
+	};
+
+
+public:
+	void Init(const Tga::ScriptCreationContext& context) override
+	{
+		{
+			Tga::ScriptPin pin = {};
+			pin.dataType = Tga::ScriptLinkDataType::Flow;
+			pin.role = Tga::ScriptPinRole::Input;
+			pin.node = context.GetNodeId();
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("Run") };
+
+			context.FindOrCreatePin(pin);
+		}
+
+
+		{
+			Tga::ScriptPin pin = {};
+			pin.dataType = Tga::ScriptLinkDataType::Float;
+			pin.role = Tga::ScriptPinRole::Input;
+			pin.node = context.GetNodeId();
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("Seconds") };
+			pin.defaultValue = { 1.0f };
+
+			myTimePin = context.FindOrCreatePin(pin);
+		}
+
+
+		{
+			Tga::ScriptPin pin = {};
+			pin.dataType = Tga::ScriptLinkDataType::Flow;
+			pin.role = Tga::ScriptPinRole::Output;
+			pin.node = context.GetNodeId();
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("") };
+
+			myOutputFlowPin = context.FindOrCreatePin(pin);
+		}
+
+
+
+	}
+	Tga::ScriptNodeResult Execute(Tga::ScriptExecutionContext& someContext, Tga::ScriptPinId /*anIncomingPin*/) const override
+	{
+		auto& data = GETDATA(Data, someContext);
+
+		auto time = std::get<float>(someContext.ReadInputPin(myTimePin).data);
+
+		const GameUpdateContext& updateContext = GAMEUPDATECONTEXT(someContext);
+
+		if (IncrementTime(data.myCurrentTime, updateContext.deltaTime, time))
+		{
+			someContext.TriggerOutputPin(myOutputFlowPin);
+			return Tga::ScriptNodeResult::Finished;
+		}
+
+		return Tga::ScriptNodeResult::KeepRunning;
+	}
+
+	std::unique_ptr<Tga::ScriptNodeRuntimeInstanceBase> CreateRuntimeInstanceData() const override
+	{
+		return std::make_unique<Data>();
+	}
+
+private:
+	const bool IncrementTime(float& aCurrentTime, const float aDeltaTime, const float aMaxTimeVal) const
+	{
+		aCurrentTime += aDeltaTime;
+		return aCurrentTime >= aMaxTimeVal;
+	}
+private:
+	Tga::ScriptPinId myTimePin;
+	Tga::ScriptPinId myOutputFlowPin;
+};
+
+
+class TimerNode : public ScriptNodeBase
+{
+private:
+	struct Data : public NodeState
+	{
+		float myCurrentTime = 0;
+		bool myTriggerDefaultOutput = false;
+	};
+
+
+public:
+	void Init(const Tga::ScriptCreationContext& context) override
+	{
+		{
+			Tga::ScriptPin pin = {};
+			pin.dataType = Tga::ScriptLinkDataType::Flow;
+			pin.role = Tga::ScriptPinRole::Input;
+			pin.node = context.GetNodeId();
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("Run") };
+
+			context.FindOrCreatePin(pin);
+		}
+
+
+		{
+			Tga::ScriptPin pin = {};
+			pin.dataType = Tga::ScriptLinkDataType::Float;
+			pin.role = Tga::ScriptPinRole::Input;
+			pin.node = context.GetNodeId();
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("Seconds") };
+			pin.defaultValue = { 1.0f };
+
+			myTimePin = context.FindOrCreatePin(pin);
+		}
+
+
+		{
+			Tga::ScriptPin pin = {};
+			pin.dataType = Tga::ScriptLinkDataType::Flow;
+			pin.role = Tga::ScriptPinRole::Output;
+			pin.node = context.GetNodeId();
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("") };
+
+			myOutputFlowPin = context.FindOrCreatePin(pin);
+		}
+
+
+		{
+			Tga::ScriptPin pin = {};
+			pin.dataType = Tga::ScriptLinkDataType::Flow;
+			pin.role = Tga::ScriptPinRole::Output;
+			pin.node = context.GetNodeId();
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("Per Iteration") };
+
+			myIteratedOutputFlowPin = context.FindOrCreatePin(pin);
+		}
+
+
+
+	}
+	Tga::ScriptNodeResult Execute(Tga::ScriptExecutionContext& someContext, Tga::ScriptPinId anIncomingPin) const override
+	{
+		auto& data = GETDATA(Data, someContext);
+
+		if (!data.myTriggerDefaultOutput || anIncomingPin.id != anIncomingPin.InvalidId)
+		{
+			someContext.TriggerOutputPin(myOutputFlowPin);
+			data.myTriggerDefaultOutput = true;
+		}
+
+		if (anIncomingPin.id == anIncomingPin.InvalidId)
+		{
+			auto time = std::get<float>(someContext.ReadInputPin(myTimePin).data);
+
+			const GameUpdateContext& updateContext = GAMEUPDATECONTEXT(someContext);
+
+			if (IncrementTime(data.myCurrentTime, updateContext.deltaTime, time))
+			{
+				someContext.TriggerOutputPin(myIteratedOutputFlowPin);
+				data.myCurrentTime = 0;
+			}
+		}
+		return Tga::ScriptNodeResult::KeepRunning;
+	}
+
+	std::unique_ptr<Tga::ScriptNodeRuntimeInstanceBase> CreateRuntimeInstanceData() const override
+	{
+		return std::make_unique<Data>();
+	}
+
+private:
+	const bool IncrementTime(float& aCurrentTime, const float aDeltaTime, const float aMaxTimeVal) const
+	{
+		aCurrentTime += aDeltaTime;
+		return aCurrentTime >= aMaxTimeVal;
+	}
+private:
+	Tga::ScriptPinId myTimePin;
+	Tga::ScriptPinId myOutputFlowPin;
+	Tga::ScriptPinId myIteratedOutputFlowPin;
+};
+
+
 void Tga::RegisterCommonNodes()
 {
 	ScriptNodeTypeRegistry::RegisterType<StartNode>("Common/Start", "A node that executes once when the script starts");
@@ -499,4 +690,8 @@ void Tga::RegisterCommonNodes()
 	ScriptNodeTypeRegistry::RegisterType<CheckCollision>("Entity/Check Collision", "Compares two entities positions and sees if one of them is ontop of another");
 
 	ScriptNodeTypeRegistry::RegisterType<SequencerNode<5>>("Logic/Sequencer/Set of 10", "Triggers a set of pins in a sequence.");
+	ScriptNodeTypeRegistry::RegisterType<DelayNode>("Logic/Timer/Delay", "Triggers its output after a set delay in seconds");
+	ScriptNodeTypeRegistry::RegisterType<TimerNode>("Logic/Timer/Iterate", "Triggers its event output on every iteration in seconds");
 }
+
+

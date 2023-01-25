@@ -31,7 +31,7 @@ void ScriptRuntimeInstance::Update(const ScriptUpdateContext& updateContext)
 	for (int i = 0; i < myActiveNodes.size(); i++)
 	{
 		ScriptNodeId nodeId = myActiveNodes[i];
-		ScriptExecutionContext executionContext(*this, updateContext, nodeId, myNodeInstances[nodeId.id].get());
+		ScriptExecutionContext executionContext(*this, updateContext, nodeId, myCallOrder[nodeId], myNodeInstances[nodeId.id].get());
 		const ScriptNodeBase& node = myScript->GetNode(nodeId);
 
 		ScriptNodeResult result = node.Execute(executionContext, { ScriptPinId::InvalidId });
@@ -47,7 +47,7 @@ void ScriptRuntimeInstance::TriggerPin(ScriptPinId pinId, const ScriptUpdateCont
 {
 	ScriptPin pin = myScript->GetPin(pinId);
 	ScriptNodeId nodeId = pin.node;
-	ScriptExecutionContext executionContext(*this, updateContext, nodeId, myNodeInstances[nodeId.id].get());
+	ScriptExecutionContext executionContext(*this, updateContext, nodeId, myCallOrder[nodeId], myNodeInstances[nodeId.id].get());
 	const ScriptNodeBase& node = myScript->GetNode(nodeId);
 
 	assert(pin.dataType == ScriptLinkDataType::Flow);
@@ -56,11 +56,11 @@ void ScriptRuntimeInstance::TriggerPin(ScriptPinId pinId, const ScriptUpdateCont
 		ScriptNodeResult result = node.Execute(executionContext, pinId);
 		if (result == ScriptNodeResult::KeepRunning)
 		{
-			ActivateNode(nodeId);
+			ActivateNode(nodeId, myCallOrder[nodeId]);
 		}
 		else
 		{
-			DeactivateNode(nodeId);
+			DeactivateNode(nodeId, myCallOrder[nodeId]);
 		}
 	}
 	else
@@ -80,8 +80,9 @@ ScriptNodeRuntimeInstanceBase* ScriptRuntimeInstance::GetRuntimeInstance(ScriptN
 	return myNodeInstances[nodeId.id].get();
 }
 
-void ScriptRuntimeInstance::ActivateNode(ScriptNodeId nodeId)
+void ScriptRuntimeInstance::ActivateNode(ScriptNodeId nodeId, ScriptNodeId prevNodeId)
 {
+	myCallOrder[nodeId] = prevNodeId;
 	for (int i = 0; i < myActiveNodes.size(); i++)
 	{
 		if (myActiveNodes[i] == nodeId)
@@ -93,8 +94,9 @@ void ScriptRuntimeInstance::ActivateNode(ScriptNodeId nodeId)
 	myActiveNodes.push_back(nodeId);
 }
 
-void ScriptRuntimeInstance::DeactivateNode(ScriptNodeId nodeId)
+void ScriptRuntimeInstance::DeactivateNode(ScriptNodeId nodeId, ScriptNodeId prevNodeId)
 {
+	myCallOrder[nodeId] = prevNodeId;
 	for (int i = 0; i < myActiveNodes.size(); i++)
 	{
 		if (myActiveNodes[i] == nodeId)
