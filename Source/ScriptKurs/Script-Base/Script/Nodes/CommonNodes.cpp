@@ -10,6 +10,9 @@
 
 #include <iostream>
 
+#include <string>
+#include <type_traits>
+
 
 #define GAMEUPDATECONTEXT(context) static_cast<const GameUpdateContext&>(context.GetUpdateContext())
 #define GETDATA(Data, context) *static_cast<Data*>(context.GetRuntimeInstanceData())
@@ -388,6 +391,55 @@ private:
 	Tga::ScriptPinId mySecondInputPin;
 
 };
+class NotGate : public Tga::ScriptNodeBase
+{
+public:
+	void Init(const Tga::ScriptCreationContext& context) override
+	{
+
+		using namespace Tga;
+
+
+		{
+			ScriptPin sourcePin = {};
+			sourcePin.dataType = ScriptLinkDataType::Bool;
+			sourcePin.name = ScriptStringRegistry::RegisterOrGetString("Input");
+			sourcePin.node = context.GetNodeId();
+			sourcePin.role = ScriptPinRole::Input;
+			sourcePin.defaultValue = { false };
+			myFirstInputPin = context.FindOrCreatePin(sourcePin);
+		}
+
+
+		{
+			ScriptPin outputPin = {};
+			outputPin.dataType = ScriptLinkDataType::Bool;
+			outputPin.name = ScriptStringRegistry::RegisterOrGetString("Result");
+			outputPin.node = context.GetNodeId();
+			outputPin.role = ScriptPinRole::Output;
+			outputPin.defaultValue = { false };
+			myResultPin = context.FindOrCreatePin(outputPin);
+		}
+
+
+
+	}
+
+
+	Tga::ScriptLinkData ReadPin(Tga::ScriptExecutionContext& someContext, Tga::ScriptPinId) const override
+	{
+		auto firstCondition = std::get<bool>(someContext.ReadInputPin(myFirstInputPin).data);
+
+		return { !firstCondition };
+
+	}
+
+private:
+	Tga::ScriptPinId myResultPin;
+	Tga::ScriptPinId myFirstInputPin;
+
+};
+
 class StringCompareNode : public Tga::ScriptNodeBase
 {
 public:
@@ -574,8 +626,6 @@ private:
 	Tga::ScriptPinId myTimePin;
 	Tga::ScriptPinId myOutputFlowPin;
 };
-
-
 class TimerNode : public ScriptNodeBase
 {
 private:
@@ -679,19 +729,190 @@ private:
 };
 
 
+
+
+template<typename Type>
+class VariableNode : public ScriptNodeBase
+{
+public:
+	void Init(const Tga::ScriptCreationContext& context) override
+	{
+		{
+			Tga::ScriptPin pin = {};
+			pin.role = Tga::ScriptPinRole::Output;
+
+			{
+				pin.dataType = std::is_same<Type, bool>::value ? Tga::ScriptLinkDataType::Bool : pin.dataType;
+				pin.dataType = std::is_same<Type, float>::value ? Tga::ScriptLinkDataType::Float : pin.dataType;
+				pin.dataType = std::is_same<Type, Tga::ScriptStringId>::value ? Tga::ScriptLinkDataType::String : pin.dataType;
+				pin.dataType = std::is_same<Type, int>::value ? Tga::ScriptLinkDataType::Int : pin.dataType;
+			}
+
+			{
+				if constexpr (std::is_same<Type, bool>::value)
+				{
+					pin.defaultValue = { false };
+				}
+
+				if constexpr (std::is_same<Type, float>::value)
+				{
+					pin.defaultValue = { 0.0f };
+				}
+
+				if constexpr (std::is_same<Type, int>::value)
+				{
+					pin.defaultValue = { 0 };
+				}
+
+				if constexpr (std::is_same <Type, Tga::ScriptStringId > ::value)
+				{
+					pin.defaultValue = { Tga::ScriptStringRegistry::RegisterOrGetString("Empty") };
+				}
+
+			}
+
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("Output") };
+			pin.node = context.GetNodeId();
+
+			myVariableOutput = context.FindOrCreatePin(pin);
+
+		}
+		{
+			Tga::ScriptPin pin = {};
+			pin.role = Tga::ScriptPinRole::Input;
+
+			{
+				pin.dataType = std::is_same<Type, bool>::value ? Tga::ScriptLinkDataType::Bool : pin.dataType;
+				pin.dataType = std::is_same<Type, float>::value ? Tga::ScriptLinkDataType::Float : pin.dataType;
+				pin.dataType = std::is_same<Type, Tga::ScriptStringId>::value ? Tga::ScriptLinkDataType::String : pin.dataType;
+				pin.dataType = std::is_same<Type, int>::value ? Tga::ScriptLinkDataType::Int : pin.dataType;
+			}
+
+			{
+				if constexpr (std::is_same<Type, bool>::value)
+				{
+					pin.defaultValue = { false };
+				}
+
+				if constexpr (std::is_same<Type, float>::value)
+				{
+					pin.defaultValue = { 0.0f };
+				}
+
+				if constexpr (std::is_same<Type, int>::value)
+				{
+					pin.defaultValue = { 0 };
+				}
+
+				if constexpr (std::is_same <Type, Tga::ScriptStringId > ::value)
+				{
+					pin.defaultValue = { Tga::ScriptStringRegistry::RegisterOrGetString("Empty") };
+				}
+
+			}
+
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("Input") };
+			pin.node = context.GetNodeId();
+
+			myVariableInput = context.FindOrCreatePin(pin);
+
+		}
+		{
+			Tga::ScriptPin pin = {};
+			pin.role = Tga::ScriptPinRole::Input;
+
+			{
+				pin.dataType = Tga::ScriptLinkDataType::String;
+			}
+
+			{
+				pin.defaultValue = { Tga::ScriptStringRegistry::RegisterOrGetString("Empty") };
+			}
+
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("Input") };
+			pin.node = context.GetNodeId();
+
+			myVariableName = context.FindOrCreatePin(pin);
+
+		}
+
+		{
+			Tga::ScriptPin pin = {};
+			pin.role = Tga::ScriptPinRole::Output;
+			pin.dataType = Tga::ScriptLinkDataType::Flow;
+			pin.node = context.GetNodeId();
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("") };
+			myFlowOutputPin = context.FindOrCreatePin(pin);
+
+
+		}
+
+		{
+			Tga::ScriptPin pin = {};
+			pin.role = Tga::ScriptPinRole::Input;
+			pin.dataType = Tga::ScriptLinkDataType::Flow;
+			pin.node = context.GetNodeId();
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("Run") };
+			context.FindOrCreatePin(pin);
+		}
+
+	}
+
+	Tga::ScriptNodeResult Execute(Tga::ScriptExecutionContext& someContext, Tga::ScriptPinId) const override
+	{
+
+		auto& input = std::get<Type>(someContext.ReadInputPin(myVariableInput).data);
+		auto& variableName = std::get<Tga::ScriptStringId>(someContext.ReadInputPin(myVariableName).data);
+
+		someContext.GlobalVariable<Type>(variableName) = input;
+
+		someContext.TriggerOutputPin(myFlowOutputPin);
+
+
+
+		return Tga::ScriptNodeResult::Finished;
+	}
+
+
+	Tga::ScriptLinkData ReadPin(Tga::ScriptExecutionContext& someContext, Tga::ScriptPinId) const override
+	{
+		auto& variableName = std::get<Tga::ScriptStringId>(someContext.ReadInputPin(myVariableName).data);
+
+		return { someContext.GlobalVariable<Type>(variableName) }
+	}
+
+
+
+private:
+	Tga::ScriptPinId myVariableName;
+	Tga::ScriptPinId myVariableOutput;
+	Tga::ScriptPinId myVariableInput;
+	Tga::ScriptPinId myOutputFlowPin;
+
+
+};
+
+
+
 void Tga::RegisterCommonNodes()
 {
 	ScriptNodeTypeRegistry::RegisterType<StartNode>("Common/Start", "A node that executes once when the script starts");
 	ScriptNodeTypeRegistry::RegisterType<UpdateNode>("Common/Update", "A node that executes constantly when the script starts");
 	ScriptNodeTypeRegistry::RegisterType<LoadLevel>("Level/Load new level", "A node that loads a new level based on a target name.");
 	ScriptNodeTypeRegistry::RegisterType<BranchNode>("Logic/Branch", "Creates a branching node.");
-	ScriptNodeTypeRegistry::RegisterType<AndGate>("Logic/AND", "Creates an AND Gate node.");
+	ScriptNodeTypeRegistry::RegisterType<AndGate>("Logic/Gates/AND", "Creates an AND Gate node.");
+	ScriptNodeTypeRegistry::RegisterType<NotGate>("Logic/Gates/NOT", "Creates a NOT Gate node.");
 	ScriptNodeTypeRegistry::RegisterType<StringCompareNode>("Logic/Comparison/Strings", "Compares two strings to see if they are the same, if they are, the node returns true");
 	ScriptNodeTypeRegistry::RegisterType<CheckCollision>("Entity/Check Collision", "Compares two entities positions and sees if one of them is ontop of another");
 
 	ScriptNodeTypeRegistry::RegisterType<SequencerNode<5>>("Logic/Sequencer/Set of 10", "Triggers a set of pins in a sequence.");
 	ScriptNodeTypeRegistry::RegisterType<DelayNode>("Logic/Timer/Delay", "Triggers its output after a set delay in seconds");
 	ScriptNodeTypeRegistry::RegisterType<TimerNode>("Logic/Timer/Iterate", "Triggers its event output on every iteration in seconds");
+
+	ScriptNodeTypeRegistry::RegisterType<VariableNode<bool>>("Common/Variables/Local Bool", "");
+	ScriptNodeTypeRegistry::RegisterType<VariableNode<int>>("Common/Variables/Local Int", "");
+	ScriptNodeTypeRegistry::RegisterType<VariableNode<float>>("Common/Variables/Local Float", "");
+	ScriptNodeTypeRegistry::RegisterType<VariableNode<Tga::ScriptStringId>>("Common/Variables/Local String", "");
 }
 
 

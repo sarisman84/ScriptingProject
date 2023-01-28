@@ -600,6 +600,19 @@ void Script::SetLink(ScriptLinkId id, const ScriptLink& newScriptLinkData)
 	myLinks[id.id].link = newScriptLinkData;
 }
 
+IData* const Script::GetData(Tga::ScriptStringId anID) const
+{
+	if (myBlackboard.count(anID) > 0)
+		return myBlackboard[anID].get();
+	return nullptr;
+}
+
+void Script::SetData(Tga::ScriptStringId anID, IData* someData) const
+{
+	
+	myBlackboard[anID].reset(someData);
+}
+
 void Script::SetPin(ScriptPinId id, const ScriptPin& newScriptPinData)
 {
 	UpdateSequenceNumber();

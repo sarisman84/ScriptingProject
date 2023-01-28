@@ -10,6 +10,9 @@ const ScriptUpdateContext& ScriptExecutionContext::GetUpdateContext()
 	return myUpdateContext;
 }
 
+
+
+
 ScriptExecutionContext::ScriptExecutionContext(ScriptRuntimeInstance& scriptRuntimeInstance, const ScriptUpdateContext& updateContext, ScriptNodeId nodeId, ScriptNodeId previousId, ScriptNodeRuntimeInstanceBase* nodeRuntimeInstance)
 	: myScriptRuntimeInstance(scriptRuntimeInstance)
 	, myUpdateContext(updateContext)
@@ -56,6 +59,20 @@ ScriptExecutionContext::~ScriptExecutionContext()
 		}
 	}
 }
+IData* ScriptExecutionContext::GlobalVariable(const Tga::ScriptStringId anID, IData& someData)
+{
+	auto& script = myScriptRuntimeInstance.GetScript();
+
+	IData* r = script.GetData(anID);
+
+	if (!r)
+	{
+		script.SetData(anID, &someData);
+		r = script.GetData(anID);
+	}
+	return r;
+}
+
 
 void ScriptExecutionContext::TriggerOutputPin(ScriptPinId pinId)
 {
