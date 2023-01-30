@@ -282,6 +282,8 @@ void Game::LoadLevel(const char* name, bool runScripts, bool runSameScript, bool
 		myPreviousLevel = myCurrentLevel.levelNameID;
 	std::string path = Tga::Settings::ResolveAssetPath("levels/" + std::string(name) + ".txt");
 	static std::unique_ptr< Tga::ScriptRuntimeInstance> oldScript;
+	if (oldScript)
+		oldScript.reset();
 	oldScript = std::move(myCurrentLevel.levelScript);
 	//myCurrentLevel.entities.ForEachEntity([this](Entity& anEntity)
 	//	{
@@ -362,7 +364,7 @@ void Game::LoadLevel(const char* name, bool runScripts, bool runSameScript, bool
 		else
 		{
 
-			std::shared_ptr<const Tga::Script> script = Tga::ScriptManager::GetScript(name);
+			std::shared_ptr<Tga::Script> script = Tga::ScriptManager::GetScript(name);
 			if (script)
 			{
 				//if (oldScript)

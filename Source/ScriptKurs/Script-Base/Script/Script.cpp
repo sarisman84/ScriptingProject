@@ -24,6 +24,18 @@ void Script::Clear()
 	myFreePins.clear();
 
 	myInstanceToId.clear();
+
+}
+
+void Tga::Script::ClearBlackboard()
+{
+	if (!myBlackboard.empty())
+		myBlackboard.clear();
+}
+
+std::unordered_map<ScriptStringId, std::shared_ptr<IData>>&& Tga::Script::MoveBlackboard()
+{
+	return std::move(myBlackboard);
 }
 
 void Script::LoadFromJson(const ScriptJson& data)
@@ -446,6 +458,10 @@ ScriptStringId Script::GetName(ScriptNodeId id) const
 
 	return myNodes[id.id].instanceName;
 }
+ScriptStringId Tga::Script::GetScriptName() const
+{
+	return myName;
+}
 Tga::Vector2f Script::GetPosition(ScriptNodeId id) const
 {
 	assert(id.id < myNodes.size());
@@ -546,6 +562,11 @@ void Script::SetPosition(ScriptNodeId id, Tga::Vector2f pos)
 	myNodes[id.id].pos = pos;
 }
 
+void Tga::Script::SetScriptName(std::string_view aName)
+{
+	myName = Tga::ScriptStringRegistry::RegisterOrGetString(aName);
+}
+
 void Script::SetLink(ScriptLinkId id, const ScriptLink& newScriptLinkData)
 {
 	UpdateSequenceNumber();
@@ -609,7 +630,7 @@ IData* const Script::GetData(Tga::ScriptStringId anID) const
 
 void Script::SetData(Tga::ScriptStringId anID, IData* someData) const
 {
-	
+
 	myBlackboard[anID].reset(someData);
 }
 

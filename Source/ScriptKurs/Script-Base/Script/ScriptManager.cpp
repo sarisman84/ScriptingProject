@@ -12,24 +12,35 @@ using namespace Tga;
 
 std::unordered_map<std::string_view, ScriptManager::InternalScriptData> ScriptManager::myLoadedScripts;
 
-std::shared_ptr<const Script> ScriptManager::GetScript(std::string_view name)
+std::shared_ptr<Script> ScriptManager::GetScript(std::string_view name)
 {
 	if (!GetEditableScript(name))
 		return nullptr;
+	static std::unordered_map<Tga::ScriptStringId, std::shared_ptr<IData>> oldBlackboard;
+	if (!oldBlackboard.empty())
+	{
+		oldBlackboard.clear();
+	}
 
 	ScriptManager::InternalScriptData& data = myLoadedScripts[name];
-
+	if (data.script)
+		data.script->ClearBlackboard();
 	int sequenceNumber = data.script->GetSequenceNumber();
 	if (data.latestSnapshotSequenceNumber == sequenceNumber)
 		return data.latestSnapshot;
 
 	std::shared_ptr<Script> newSnapshot = std::make_shared<Script>();
+	newSnapshot->SetScriptName(name);
 	ScriptJson json;
 	data.script->WriteToJson(json);
 	newSnapshot->LoadFromJson(json);
 	newSnapshot->SetSequenceNumber(data.script->GetSequenceNumber());
 
 	data.latestSnapshotSequenceNumber = sequenceNumber;
+	if (data.latestSnapshot)
+	{
+		oldBlackboard = data.latestSnapshot->MoveBlackboard();
+	}
 	data.latestSnapshot = newSnapshot;
 
 	return newSnapshot;

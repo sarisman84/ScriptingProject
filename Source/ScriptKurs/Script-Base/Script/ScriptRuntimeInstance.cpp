@@ -3,7 +3,7 @@
 using namespace Tga;
 
 
-ScriptRuntimeInstance::ScriptRuntimeInstance(std::shared_ptr<const Script>& script)
+ScriptRuntimeInstance::ScriptRuntimeInstance(std::shared_ptr<Script>& script)
 	: myScript(script)
 {
 	assert(script);
@@ -69,7 +69,7 @@ void ScriptRuntimeInstance::TriggerPin(ScriptPinId pinId, const ScriptUpdateCont
 	}
 }
 
-const Script& ScriptRuntimeInstance::GetScript() const
+Script& ScriptRuntimeInstance::GetScript() const
 {
 	return *myScript;
 }

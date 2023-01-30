@@ -2,6 +2,7 @@
 
 #include <Script/Script.h>
 #include <Script/ScriptRuntimeInstance.h>
+#include <Script/ScriptStringRegistry.h>
 
 using namespace Tga;
 
@@ -59,16 +60,20 @@ ScriptExecutionContext::~ScriptExecutionContext()
 		}
 	}
 }
-IData* ScriptExecutionContext::GlobalVariable(const Tga::ScriptStringId anID, IData& someData)
+IData* ScriptExecutionContext::GlobalVariable(const Tga::ScriptStringId anID)
 {
 	auto& script = myScriptRuntimeInstance.GetScript();
+	auto str = Tga::ScriptStringRegistry::GetStringFromStringId(anID);
+	auto worldStr = Tga::ScriptStringRegistry::GetStringFromStringId(script.GetScriptName());
+	std::string name = std::string(str) + "#" + std::string(worldStr);
 
-	IData* r = script.GetData(anID);
+	Tga::ScriptStringId id = Tga::ScriptStringRegistry::RegisterOrGetString(name);
+	IData* r = script.GetData(id);
 
 	if (!r)
 	{
-		script.SetData(anID, &someData);
-		r = script.GetData(anID);
+		script.SetData(id, new IData());
+		r = script.GetData(id);
 	}
 	return r;
 }

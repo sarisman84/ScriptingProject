@@ -71,6 +71,7 @@ namespace Tga
 
 		std::unordered_multimap<ScriptStringId, ScriptNodeId> myInstanceToId;
 		mutable std::unordered_map<Tga::ScriptStringId, std::shared_ptr<IData>> myBlackboard;
+		Tga::ScriptStringId myName;
 		void UpdateSequenceNumber() { mySequenceNumber++; }
 
 	public:
@@ -78,6 +79,8 @@ namespace Tga
 		~Script();
 
 		void Clear();
+		void ClearBlackboard();
+		std::unordered_map<ScriptStringId, std::shared_ptr<IData>>&& MoveBlackboard();
 
 		void LoadFromJson(const ScriptJson& data);
 		void WriteToJson(ScriptJson& data);
@@ -115,6 +118,7 @@ namespace Tga
 		const ScriptNodeBase& GetNode(ScriptNodeId id) const;
 		ScriptNodeBase& GetNode(ScriptNodeId id);
 		ScriptStringId GetName(ScriptNodeId id) const;
+		ScriptStringId GetScriptName() const;
 		Tga::Vector2f GetPosition(ScriptNodeId id) const;
 
 		const ScriptPinId* GetInputPins(ScriptNodeId node, size_t& outCount) const;
@@ -128,6 +132,7 @@ namespace Tga
 		void SetNode(ScriptNodeId id, std::unique_ptr<ScriptNodeBase>&& newNodeData);
 		void SetName(ScriptNodeId id, ScriptStringId name);
 		void SetPosition(ScriptNodeId id, Tga::Vector2f pos);
+		void SetScriptName(std::string_view aName);
 
 		void SetLink(ScriptLinkId id, const ScriptLink& newScriptLinkData);
 		void SetPin(ScriptPinId id, const ScriptPin& newScriptPinData);

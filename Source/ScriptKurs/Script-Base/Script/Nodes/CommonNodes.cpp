@@ -829,7 +829,7 @@ public:
 				pin.defaultValue = { Tga::ScriptStringRegistry::RegisterOrGetString("Empty") };
 			}
 
-			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("Input") };
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("Name") };
 			pin.node = context.GetNodeId();
 
 			myVariableName = context.FindOrCreatePin(pin);
@@ -861,8 +861,8 @@ public:
 	Tga::ScriptNodeResult Execute(Tga::ScriptExecutionContext& someContext, Tga::ScriptPinId) const override
 	{
 
-		auto& input = std::get<Type>(someContext.ReadInputPin(myVariableInput).data);
-		auto& variableName = std::get<Tga::ScriptStringId>(someContext.ReadInputPin(myVariableName).data);
+		auto input = std::get<Type>(someContext.ReadInputPin(myVariableInput).data);
+		auto variableName = std::get<Tga::ScriptStringId>(someContext.ReadInputPin(myVariableName).data);
 
 		someContext.GlobalVariable<Type>(variableName) = input;
 
@@ -876,9 +876,9 @@ public:
 
 	Tga::ScriptLinkData ReadPin(Tga::ScriptExecutionContext& someContext, Tga::ScriptPinId) const override
 	{
-		auto& variableName = std::get<Tga::ScriptStringId>(someContext.ReadInputPin(myVariableName).data);
+		auto variableName = std::get<Tga::ScriptStringId>(someContext.ReadInputPin(myVariableName).data);
 
-		return { someContext.GlobalVariable<Type>(variableName) }
+		return { someContext.GlobalVariable<Type>(variableName) };
 	}
 
 
@@ -887,7 +887,7 @@ private:
 	Tga::ScriptPinId myVariableName;
 	Tga::ScriptPinId myVariableOutput;
 	Tga::ScriptPinId myVariableInput;
-	Tga::ScriptPinId myOutputFlowPin;
+	Tga::ScriptPinId myFlowOutputPin;
 
 
 };

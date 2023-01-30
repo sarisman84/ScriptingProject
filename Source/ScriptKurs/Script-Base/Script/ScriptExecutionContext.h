@@ -25,7 +25,7 @@ class ScriptExecutionContext
 	ScriptPinId myTriggeredOutputQueue[MAX_TRIGGERED_OUTPUTS];
 	int myTriggeredOutputCount;
 private:
-	IData* GlobalVariable(const Tga::ScriptStringId anID, IData& someData);
+	IData* GlobalVariable(const Tga::ScriptStringId anID);
 public:
 	ScriptExecutionContext(ScriptRuntimeInstance& scriptRuntimeInstance, const ScriptUpdateContext& updateContext, ScriptNodeId nodeId,ScriptNodeId previousId, ScriptNodeRuntimeInstanceBase* nodeRuntimeInstance);
 	~ScriptExecutionContext();
@@ -50,7 +50,7 @@ public:
 	template<typename T>
 	T& GlobalVariable(const Tga::ScriptStringId& anID)
 	{
-		return static_cast<Data<T>*>(GlobalVariable(anID, Data<T>())->GetData();
+		return static_cast<Data<T>*>(GlobalVariable(anID))->GetData();
 	}
 
 };

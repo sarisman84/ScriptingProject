@@ -10,19 +10,19 @@ namespace Tga
 
 	class ScriptRuntimeInstance
 	{
-		std::shared_ptr<const Script> myScript;
+		std::shared_ptr<Script> myScript;
 
 		std::vector<std::unique_ptr<ScriptNodeRuntimeInstanceBase>> myNodeInstances;
 		std::vector<ScriptNodeId> myActiveNodes;
 		std::unordered_map<ScriptNodeId, ScriptNodeId> myCallOrder;
 
 	public:
-		ScriptRuntimeInstance(std::shared_ptr<const Script>& script);
+		ScriptRuntimeInstance(std::shared_ptr<Script>& script);
 		void Init();
 		void Update(const ScriptUpdateContext& context);
 		void TriggerPin(ScriptPinId pinId, const ScriptUpdateContext& updateContext);
 
-		const Script& GetScript() const;
+		Script& GetScript() const;
 		ScriptNodeRuntimeInstanceBase* GetRuntimeInstance(ScriptNodeId nodeId);
 		void ActivateNode(ScriptNodeId nodeId, ScriptNodeId prevNodeId);
 		void DeactivateNode(ScriptNodeId nodeId, ScriptNodeId prevNodeId);
