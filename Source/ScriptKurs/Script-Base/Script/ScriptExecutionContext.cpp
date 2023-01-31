@@ -47,6 +47,7 @@ ScriptExecutionContext::~ScriptExecutionContext()
 
 		ScriptExecutionContext executionContext(myScriptRuntimeInstance, myUpdateContext, nodeId, myNodeId, myScriptRuntimeInstance.GetRuntimeInstance(nodeId));
 
+
 		const ScriptNodeBase& node = script.GetNode(nodeId);
 
 		ScriptNodeResult result = node.Execute(executionContext, targetPinId);
@@ -72,7 +73,7 @@ IData* ScriptExecutionContext::GlobalVariable(const Tga::ScriptStringId anID)
 
 	if (!r)
 	{
-		script.SetData(id, new IData());
+		script.SetData(id, std::make_shared<IData>());
 		r = script.GetData(id);
 	}
 	return r;

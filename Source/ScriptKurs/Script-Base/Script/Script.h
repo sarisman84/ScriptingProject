@@ -138,7 +138,7 @@ namespace Tga
 		void SetPin(ScriptPinId id, const ScriptPin& newScriptPinData);
 
 		IData* const GetData(Tga::ScriptStringId anID) const;
-		void SetData(Tga::ScriptStringId anID, IData* someData) const;
+		void SetData(Tga::ScriptStringId anID, std::shared_ptr<IData> someData) const;
 
 		ScriptNodeId GetFirstNodeId() const;
 		ScriptNodeId GetNextNodeId(ScriptNodeId previousId) const;

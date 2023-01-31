@@ -628,10 +628,9 @@ IData* const Script::GetData(Tga::ScriptStringId anID) const
 	return nullptr;
 }
 
-void Script::SetData(Tga::ScriptStringId anID, IData* someData) const
+void Script::SetData(Tga::ScriptStringId anID, std::shared_ptr<IData> someData) const
 {
-
-	myBlackboard[anID].reset(someData);
+	myBlackboard[anID] = someData;
 }
 
 void Script::SetPin(ScriptPinId id, const ScriptPin& newScriptPinData)

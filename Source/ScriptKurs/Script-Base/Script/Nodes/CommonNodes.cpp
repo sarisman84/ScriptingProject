@@ -664,6 +664,18 @@ public:
 
 		{
 			Tga::ScriptPin pin = {};
+			pin.dataType = Tga::ScriptLinkDataType::Bool;
+			pin.role = Tga::ScriptPinRole::Input;
+			pin.node = context.GetNodeId();
+			pin.name = { Tga::ScriptStringRegistry::RegisterOrGetString("Looping") };
+			pin.defaultValue = { true };
+
+			myLoopingPin = context.FindOrCreatePin(pin);
+		}
+
+
+		{
+			Tga::ScriptPin pin = {};
 			pin.dataType = Tga::ScriptLinkDataType::Flow;
 			pin.role = Tga::ScriptPinRole::Output;
 			pin.node = context.GetNodeId();
@@ -689,26 +701,28 @@ public:
 	Tga::ScriptNodeResult Execute(Tga::ScriptExecutionContext& someContext, Tga::ScriptPinId anIncomingPin) const override
 	{
 		auto& data = GETDATA(Data, someContext);
-
+		auto looping = std::get<bool>(someContext.ReadInputPin(myLoopingPin).data);
+		auto time = std::get<float>(someContext.ReadInputPin(myTimePin).data);
 		if (!data.myTriggerDefaultOutput || anIncomingPin.id != anIncomingPin.InvalidId)
 		{
 			someContext.TriggerOutputPin(myOutputFlowPin);
 			data.myTriggerDefaultOutput = true;
 		}
-
-		if (anIncomingPin.id == anIncomingPin.InvalidId)
+		std::cout << "Executing Timer!" << std::endl;
+		if (anIncomingPin.id == anIncomingPin.InvalidId && data.myCurrentTime < time)
 		{
-			auto time = std::get<float>(someContext.ReadInputPin(myTimePin).data);
+
 
 			const GameUpdateContext& updateContext = GAMEUPDATECONTEXT(someContext);
 
 			if (IncrementTime(data.myCurrentTime, updateContext.deltaTime, time))
 			{
 				someContext.TriggerOutputPin(myIteratedOutputFlowPin);
-				data.myCurrentTime = 0;
+				if (looping)
+					data.myCurrentTime = 0;
 			}
 		}
-		return Tga::ScriptNodeResult::KeepRunning;
+		return  Tga::ScriptNodeResult::KeepRunning;
 	}
 
 	std::unique_ptr<Tga::ScriptNodeRuntimeInstanceBase> CreateRuntimeInstanceData() const override
@@ -724,6 +738,7 @@ private:
 	}
 private:
 	Tga::ScriptPinId myTimePin;
+	Tga::ScriptPinId myLoopingPin;
 	Tga::ScriptPinId myOutputFlowPin;
 	Tga::ScriptPinId myIteratedOutputFlowPin;
 };
@@ -877,8 +892,23 @@ public:
 	Tga::ScriptLinkData ReadPin(Tga::ScriptExecutionContext& someContext, Tga::ScriptPinId) const override
 	{
 		auto variableName = std::get<Tga::ScriptStringId>(someContext.ReadInputPin(myVariableName).data);
+		std::cout << "Reading Data: " << Tga::ScriptStringRegistry::GetStringFromStringId(variableName).data() << ".";
+		Type& data = someContext.GlobalVariable<Type>(variableName);
 
-		return { someContext.GlobalVariable<Type>(variableName) };
+
+		if constexpr (std::is_same<Type, float>::value)
+			std::cout << "val: " << (float)data << std::endl;
+		if constexpr (std::is_same<Type, int>::value)
+			std::cout << "val: " << (int)data << std::endl;
+		if constexpr (std::is_same<Type, bool>::value)
+			std::cout << "val: " << (bool)data << std::endl;
+		if constexpr (std::is_same<Type, Tga::ScriptStringId>::value)
+		{
+			std::cout << "val: " << "unknown" << std::endl;
+		}
+
+
+		return { data };
 	}
 
 
@@ -907,7 +937,7 @@ void Tga::RegisterCommonNodes()
 
 	ScriptNodeTypeRegistry::RegisterType<SequencerNode<5>>("Logic/Sequencer/Set of 10", "Triggers a set of pins in a sequence.");
 	ScriptNodeTypeRegistry::RegisterType<DelayNode>("Logic/Timer/Delay", "Triggers its output after a set delay in seconds");
-	ScriptNodeTypeRegistry::RegisterType<TimerNode>("Logic/Timer/Iterate", "Triggers its event output on every iteration in seconds");
+	ScriptNodeTypeRegistry::RegisterType<TimerNode>("Logic/Timer/Timer", "Triggers its event output on every iteration in seconds");
 
 	ScriptNodeTypeRegistry::RegisterType<VariableNode<bool>>("Common/Variables/Local Bool", "");
 	ScriptNodeTypeRegistry::RegisterType<VariableNode<int>>("Common/Variables/Local Int", "");
